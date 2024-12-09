@@ -66,7 +66,7 @@ open class TogetherAIService {
     /// - Returns: A chat completion response. See the reference above.
     public func streamingChatCompletionRequest(
         body: TogetherAIChatCompletionRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
+    ) async throws -> OpenAIAsyncChunks {
         var body = body
         body.stream = true
 
@@ -94,6 +94,6 @@ open class TogetherAIService {
             )
         }
 
-        return asyncBytes.lines.compactMap { OpenAIChatCompletionChunk.from(line: $0) }
+        return OpenAIAsyncChunks(asyncLines: asyncBytes.lines)
     }
 }

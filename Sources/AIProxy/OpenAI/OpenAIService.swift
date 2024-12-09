@@ -75,17 +75,16 @@ open class OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
     public func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
+    ) async throws -> OpenAIAsyncChunks {
         var body = body
         body.stream = true
-        body.streamOptions = .init(includeUsage: true)
         let session = AIProxyURLSession.create()
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
             proxyPath: self.resolvedPath("chat/completions"),
-            body:  try JSONEncoder().encode(body),
+            body: try JSONEncoder().encode(body),
             verb: .post,
             contentType: "application/json"
         )
@@ -104,7 +103,7 @@ open class OpenAIService {
             )
         }
 
-        return asyncBytes.lines.compactMap { OpenAIChatCompletionChunk.from(line: $0) }
+        return OpenAIAsyncChunks(asyncLines: asyncBytes.lines)
     }
 
     /// Initiates a create image request to /v1/images/generations
